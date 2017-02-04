@@ -155,6 +155,9 @@ protected:
 	void right_rotate(Node *node);
 	void left_rotate(Node *node);
 	void setRoot(Node *node){Tree::setRoot(node);getRoot()->parent=nil;}
+	void transplant(Node *u,Node *v);
+	Node* Minimum(Node *node);
+	void delete_fixup(Node *node);
 public:
 	rb_tree(Node *root):Tree(root){
 		nil=new Node(0,NULL,NULL,NULL);
@@ -165,7 +168,9 @@ public:
 		root->right=nil;
 	}
 	void Insert(int data);
+	void Delete(Node* node);
 	void TranverseInorder(Node *node);
+	
 		
 	
 
@@ -270,6 +275,65 @@ void rb_tree::Insert(int data)
 		}
 	}
 }
+
+Node* rb_tree::Minimum(Node *node)
+{
+	while(node->left!=nil)
+		node=node->left;
+	return node;
+}
+
+void rb_tree::transplant(Node *u,Node *v)
+{
+	if(u->parent==nil)
+		setRoot(v);
+	else if(u==u->parent->left)
+		u->parent->left=v;
+	else 
+		u->parent->right=v;
+	v->parent=u->parent;
+}
+
+void rb_tree::delete_fixup(Node *node)
+{
+	
+
+}
+
+void rb_tree::Delete(Node* node)
+{
+	Node *x=nil;
+	Node *y=node;
+	int origin_color=y->color;
+	if(node->left==nil){
+		x=node->right;
+		transplant(z,z->right);
+	}else if(node->right==nil){
+		x=node->right;
+		transplant(z,z->left);
+	}else{
+		y=Minium(node);
+		origin_color=y->color;
+		x=y->right;
+		if(y->parent==node)
+			x->parent=y->parent;
+		else{
+			transplant(y,y->right);
+			y->right=node->right;
+			y->right->parent=y;
+		}
+		transplant(node,y);
+		y->left=node->left;
+		y->left->parent=y;
+		y->color=node->color;
+	}
+	if(origin_color==BLACK)
+		
+
+}
+
+
+
 
 void rb_tree::TranverseInorder(Node *node)
 {
