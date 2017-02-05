@@ -170,10 +170,6 @@ public:
 	void Insert(int data);
 	void Delete(Node* node);
 	void TranverseInorder(Node *node);
-	
-		
-	
-
 };
 
 void rb_tree::right_rotate(Node *node)
@@ -214,6 +210,15 @@ void rb_tree::left_rotate(Node *node)
 	node->parent=y;
 }
 
+
+/*
+	循环前提：插入节点的父节点是红色，且插入节点会被染成红色，违反性质4
+	（待插入节点父节点是祖父节点的左孩子）
+	红黑树插入分为三种情况：1)叔节点为红色,调整祖父节点、叔节点、父节点的颜色即可保持性质4
+						   2)叔节点为黑色，但插入节点是父节点的右孩子，对父节点进行左旋转，然后继续循环，转换为情况3
+						   3)叔节点为黑色，但插入节点是父节点的左孩子，对祖父节点和父节点染色保持性质5，然后对祖父节点进行右旋转，保持性质4。
+	另外三种情况即是对称的。					   
+*/
 void rb_tree::Insert(int data)
 {
 	Node *z=new Node(data,NULL,NULL,NULL);
@@ -296,10 +301,68 @@ void rb_tree::transplant(Node *u,Node *v)
 
 void rb_tree::delete_fixup(Node *node)
 {
+	Node *w=nil;
+	while(node!=getRoot()&&node->color!=BLACK){
+		if(node==node->parent->left){
+			w=node->parent->right;
+			if(w->color==RED){
+				w->color=BLACK;
+				node->parent->color=RED;
+				left_rotate(node->parent);
+			}
+			if(w->left->color==BLACK&&w->right->color==BLACK){
+				w->color=RED;
+				node=node->parent;
+			}
+			else if(w->right->color==BLACK){
+				w->left->color=BLACK;
+				w->color=RED;
+				right_rotate(w);
+				w=node->parent->right;
+			}
+			w->color=node->parent->color;
+			w->right->color=BLACK;
+			node->parent->color=BLACK;
+			left_rotate(node->parent);
+			node=getRoot();
+		}
+		else{
+			w=node->parent->left;
+			if(w->color==RED){
+				w->color=BLACK;
+				node->parent->color=RED;
+				right_rotate(node->parent);
+			}
+			if(w->left->color==BLACK&&w->right->color==BLACK){
+				w->color=RED;
+				node=node->parent;
+			}
+			else if(w->left->color==BLACK){
+				w->right->color=BLACK;
+				w->color=RED;
+				left_rotate(w);
+				w=node->parent->left;
+			}
+			w->color=node->parent->color;
+			w->left->color=BLACK;
+			node->parent->color=BLACK;
+			right_rotate(node->parent);
+			node=getRoot();
+		}
+		
+	}
+	getRoot()->color=BLACK;
 	
-
 }
 
+
+/*
+	红黑树的删除
+	1.二叉树的删除
+	2.设置节点x定位为原来y的位置
+	3.如果移动的节点y的原色是黑色，会引起红黑性质的变化，需要调用辅助过程fixup调整。	
+	
+*/
 void rb_tree::Delete(Node* node)
 {
 	Node *x=nil;
@@ -307,12 +370,12 @@ void rb_tree::Delete(Node* node)
 	int origin_color=y->color;
 	if(node->left==nil){
 		x=node->right;
-		transplant(z,z->right);
+		transplant(node,node->right);
 	}else if(node->right==nil){
 		x=node->right;
-		transplant(z,z->left);
+		transplant(node,node->left);
 	}else{
-		y=Minium(node);
+		y=Minimum(node);
 		origin_color=y->color;
 		x=y->right;
 		if(y->parent==node)
@@ -328,7 +391,7 @@ void rb_tree::Delete(Node* node)
 		y->color=node->color;
 	}
 	if(origin_color==BLACK)
-		
+		delete_fixup(x);
 
 }
 
@@ -362,6 +425,8 @@ int main()
 		for(int i=0;i<sizeof(arr)/sizeof(typeof(arr[0]));i++){
 		t2->Insert(arr[i]);
 	}
+	t2->TranverseInorder(t2->getRoot());
+	t2->Delete(t2->Query(t2->getRoot(),7));
 	t2->TranverseInorder(t2->getRoot());
 	return 0;
 }
