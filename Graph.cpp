@@ -1,5 +1,7 @@
 #include<iostream>
 #include<cstdio>
+#include<queue>
+#include<cstring>
 using namespace std;
 
 #define N 100
@@ -71,6 +73,61 @@ Graph createGraph(){
 	return g;
 }
 
+void BFS(Graph &g){	
+	queue<int> Q;
+	bool visited[g.vexnum];
+	memset(visited,0,g.vexnum);
+	ArcNode *q=g.vertix[0].firstArc;
+	if(q==NULL)
+		for(int i=0;i<g.arcnum;i++){
+			if(g.vertix[i].firstArc!=NULL){
+				q=g.vertix[i].firstArc;
+				break;
+			}
+		}
+	while(q!=NULL){
+		Q.push(q->adjvex);
+		q=q->next;
+	}
+	printf("%c",g.vertix[0].data);
+	visited[0]=true;
+	while(!Q.empty()){
+		visited[Q.front()]=true;
+		char temp=g.vertix[Q.front()].data;
+		q=g.vertix[Q.front()].firstArc;
+		while(q!=NULL){
+			if(!visited[q->adjvex])
+				Q.push(q->adjvex);
+			q=q->next;
+		}
+		Q.pop();
+		printf("->%c",temp);
+	}
+}
+
+
+void DFS_visit(Graph &g,int adj,bool *visited){
+	printf("%c->",g.vertix[adj].data);
+	ArcNode *q=g.vertix[adj].firstArc;
+	visited[adj]=true;
+	while(q!=NULL){
+		if(!visited[q->adjvex])
+			DFS_visit(g,q->adjvex,visited);
+		q=q->next;
+	}
+	return ;
+}
+
+void DFS(Graph &g){
+	bool visited[g.vexnum];
+	memset(visited,0,g.vexnum);
+	for(int i=0;i<g.vexnum;i++){
+		if(!visited[i]){
+			DFS_visit(g,i,visited);
+		}
+	}
+}
+
 int main(){
 	Graph g=createGraph();
 	cout<<"finished"<<endl;
@@ -79,6 +136,9 @@ int main(){
 		cout<<p->adjvex<<endl;
 		p=p->next;
 	}
+	BFS(g);
+	cout<<endl;
+	DFS(g);
 	return 0;
 }
 
