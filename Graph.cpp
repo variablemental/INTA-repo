@@ -33,6 +33,18 @@ typedef struct Graph{
 	int vexnum,arcnum;
 }Graph;
 
+typedef struct Edge{
+	int begin;
+	int end;
+	int weight;
+	Edge(){};
+	Edge(int begin,int end,int weight){
+		this->begin=begin;
+		this->end=end;
+		this->weight=weight;
+	}
+}Edge;
+
 int LocateVex(Graph &G,char &ch){
 	int i;
 	for(i=0;i<G.vexnum;i++)
@@ -128,6 +140,65 @@ void DFS(Graph &g){
 	}
 }
 
+Edge* loadEdge(Graph *g){
+	Edge edgeSet[g->arcnum];
+	int n=0;
+	for(int i=0;i<g->vexnum;i++){
+		ArcNode *q=g->vertix[i].firstArc;
+		while(q){
+			Edge *newEdge=new Edge(i,q->adjvex,q->weight);
+			edgeSet[n]=*newEdge;
+			n++;	
+			q=q->next;
+		}
+	}
+	return edgeSet;
+}
+
+void sort(Edge *arr){
+	int length=sizeof(arr)/sizeof(arr[0]);
+	for(int i=1;i<length;i++){
+		int j;
+		Edge reg=arr[i];
+		for(j=0;j<i;j++){
+			if(arr[j].weight>arr[i].weight)
+				break;
+		}
+		for(int k=i;k>j;k--){
+			arr[k]=arr[k-1];
+		}
+		arr[j]=reg;
+	}
+}
+
+bool contain(int *arr,int v){
+	int length=sizeof(arr)/sizeof(arr);
+	for(int i=0;i<length;i++){
+		if(arr[i]==v)
+			break;
+	}
+}
+
+void Kruskal(Graph *g){
+	Edge *ex=loadEdge(g);
+	int length=sizeof(ex)/sizeof(ex[0]);
+	sort(ex);
+	int visited[g->vexnum];
+	int n=0;
+	int vex=0;
+	while(n<=g->vexnum){
+		if(!(contain(visited,ex[vex].begin)&&contain(visited,ex[vex].end))){
+				visited[n]=ex[vex].begin;
+				visited[n+1]=ex[vex].end;
+				n+=2;
+				vex++;
+				printf("%d->%d\n",&ex[vex].begin,&ex[vex].end);
+		}
+	}
+}
+
+
+
 int main(){
 	Graph g=createGraph();
 	cout<<"finished"<<endl;
@@ -136,9 +207,13 @@ int main(){
 		cout<<p->adjvex<<endl;
 		p=p->next;
 	}
+	printf("BFS:\n");
 	BFS(g);
 	cout<<endl;
+	printf("DFS:\n");
 	DFS(g);
+	printf("Algorithm Kruskal:\n");
+	Kruskal(&g);
 	return 0;
 }
 
