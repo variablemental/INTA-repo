@@ -140,8 +140,8 @@ void DFS(Graph &g){
 	}
 }
 
-Edge* loadEdge(Graph *g){
-	Edge edgeSet[g->arcnum];
+Edge edgeSet[N];
+void loadEdge(Graph *g){
 	int n=0;
 	for(int i=0;i<g->vexnum;i++){
 		ArcNode *q=g->vertix[i].firstArc;
@@ -152,7 +152,6 @@ Edge* loadEdge(Graph *g){
 			q=q->next;
 		}
 	}
-	return edgeSet;
 }
 
 void sort(Edge *arr){
@@ -175,12 +174,14 @@ bool contain(int *arr,int v){
 	int length=sizeof(arr)/sizeof(arr);
 	for(int i=0;i<length;i++){
 		if(arr[i]==v)
-			break;
+			return true;
 	}
+	return false;
 }
 
 void Kruskal(Graph *g){
-	Edge *ex=loadEdge(g);
+	loadEdge(g);
+	Edge *ex=edgeSet;
 	int length=sizeof(ex)/sizeof(ex[0]);
 	sort(ex);
 	int visited[g->vexnum];
@@ -192,7 +193,7 @@ void Kruskal(Graph *g){
 				visited[n+1]=ex[vex].end;
 				n+=2;
 				vex++;
-				printf("%d->%d\n",&ex[vex].begin,&ex[vex].end);
+				printf("%d->%d\n",ex[vex].begin,ex[vex].end);
 		}
 	}
 }
