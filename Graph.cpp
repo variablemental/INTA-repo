@@ -5,6 +5,7 @@
 using namespace std;
 
 #define N 100
+#define INF 0x3F3F3F
 
 typedef struct ArcNode{
 	int adjvex;
@@ -198,6 +199,155 @@ void Kruskal(Graph *g){
 	}
 }
 
+void printMat(int** mat,int row,int length){
+	cout<<length<<" "<<row<<endl;
+	for(int i=0;i<row;i++){
+		for(int j=0;j<length;j++){
+			if(mat[i][j]==INF)
+				cout<<"INF	";
+			else
+				cout<<mat[i][j]<<"	";
+			}
+		cout<<endl;
+	}
+
+}
+
+int **getMatrix(Graph *g){
+	const int vexnum=g->vexnum;
+	const int arcnum=g->arcnum;
+	int **mat=new int*[vexnum];
+	for(int i=0;i<g->vexnum;i++){
+		mat[i]=new int[arcnum];
+		for(int j=0;j<g->vexnum;j++)
+			mat[i][j]=INF;
+	}
+	for(int i=0;i<g->vexnum;i++){
+		ArcNode *q=g->vertix[i].firstArc;
+		while(q){
+			mat[i][q->adjvex]=q->weight;
+			q=q->next;
+		}
+	}
+	return mat;
+}
+
+int **getMatrix_non(Graph *g){
+	const int vexnum=g->vexnum;
+	const int arcnum=g->arcnum;
+	int **mat=new int*[vexnum];
+	for(int i=0;i<vexnum;i++){
+		mat[i]=new int[vexnum];
+		for(int j=0;j<vexnum;j++)
+			mat[i][j]=INF;
+	}
+	for(int i=0;i<g->vexnum;i++){
+		ArcNode *q=g->vertix[i].firstArc;
+		while(q){
+			if(q->weight<INF){
+				mat[i][q->adjvex]=q->weight;
+				mat[q->adjvex][i]=q->weight;
+			}
+			q=q->next;
+		}
+	}
+	printMat(mat,vexnum,vexnum);
+	return mat;
+}
+
+void Prime(Graph *g){
+	int **mat=getMatrix(g);
+	bool visited[g->vexnum];
+	int dist[g->vexnum];
+	int sum=0;
+	memset(visited,false,sizeof(visited));
+	
+	visited[0]=true;
+	for(int i=0;i<g->vexnum;i++)
+		dist[i]=mat[0][i];
+		
+	for(int i=0;i<g->vexnum;i++){
+		int min=INF;
+		int index=0;
+		for(int j=0;j<g->vexnum;j++)
+			if(!visited[j]&&min>dist[j]){
+				min=dist[j];
+				index=j;
+			}
+		visited[index]=true;
+		sum+=min;
+		
+		for(int j=0;j<g->vexnum;j++){
+			if(!visited[j]&&dist[j]>mat[index][j])
+				dist[j]=mat[index][j];
+		}
+		
+		for(int j=0;j<g->vexnum;j++){
+			if(mat[j][index]==min){
+				printf("%c",g->vertix[j].data);
+			}
+			printf("->%c ",g->vertix[index].data);
+		}
+		cout<<sum;	
+	}
+}
+
+void printRoad(int *prev,int i){
+	if(prev[i]==INF){
+		printf("%d->",i);
+		return ;
+	}
+	printRoad(prev,prev[i]);
+	printf("%d->",prev[i]);
+}
+
+bool validate(int *visited){
+	int length=sizeof(visited)/sizeof(visited[0]);
+	for(int i=0;i<length;i++)
+		if(!visited[i])
+			return false;
+	return true;
+}
+
+void dijkstra(Graph *g){
+	int visited[g->vexnum];
+	int dist[g->vexnum];
+	int prev[g->vexnum];
+	int **mat=getMatrix_non(g);
+	memset(visited,false,sizeof(visited));
+	for(int i=0;i<g->vexnum;i++){
+		dist[i]=mat[0][i];
+		if(mat[0][i]!=INF)
+			prev[i]=0;
+		else
+			prev[i]=INF;
+	}
+	visited[0]=true;
+	cout<<"0->";
+	int min=INF;
+	int select=0;
+	for(int k=1;k<g->vexnum;k++){
+		int min=INF;
+		int flag=select;
+		for(int i=0;i<g->vexnum;i++)
+			if(!visited[i]&&min>dist[i]){
+				min=dist[i];
+				select=i;
+			}
+		if(flag==select)
+			break;
+		visited[select]=true;
+		cout<<select<<"->";
+		for(int i=0;i<g->vexnum;i++){
+			if(!visited[i]&&dist[select]+mat[select][i]<dist[i]){
+				dist[i]=dist[select]+mat[select][i];
+				prev[i]=select;
+			}
+		}
+	}
+	cout<<"endpoint"<<endl;
+}
+
 
 
 int main(){
@@ -215,6 +365,11 @@ int main(){
 	DFS(g);
 	printf("Algorithm Kruskal:\n");
 	Kruskal(&g);
+	cout<<"Algorithm Prime:"<<endl;
+	Prime(&g);
+	cout<<endl;
+	cout<<"Algorithm Dijkstra:"<<endl;
+	dijkstra(&g);
 	return 0;
 }
 
